@@ -6,7 +6,7 @@ A Prometheus Cloudwatch Logs exporter written in Python.
 
 | Metrics  | Dimensions | Labels | Description |
 | ------  | ------ | ------ | ----------- |
-| aws\_logs\_stored_bytes | log_group_name | log_group_name | Total space in bytes used by the log group |
+| aws\_logs\_stored_bytes | log_group | log_group | Total space in bytes used by the log group |
 
 ## Configuration
 
