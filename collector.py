@@ -33,7 +33,7 @@ class CloudwatchLogsCollector:
         log_group_stored_byte = GaugeMetricFamily(
             self.metric_prefix + 'stored_bytes',
             'Total size of the log group in bytes',
-            labels=['log_group']
+            labels=['log_group_name']
         )
         paginator = self.client.get_paginator('describe_log_groups')
         pages = paginator.paginate()
