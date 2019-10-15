@@ -1,7 +1,6 @@
 import boto3
-from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import GaugeMetricFamily, Summary
 import logging
-import time
 
 
 class Logger:
@@ -18,6 +17,10 @@ class Logger:
         self.logger = logger
 
 
+# Create a metric to track time spent and requests made.
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+
+
 class CloudwatchLogsCollector:
     """Class used to get metrics from AWS Cloudwatch Logs.
     """
@@ -26,10 +29,9 @@ class CloudwatchLogsCollector:
         self.client = boto3.client('logs')
         self.metric_prefix = "aws_logs_"
         self.logger = Logger().logger
-        self.metric_collector_duration = None
 
+    @REQUEST_TIME.time()
     def collect_log_groups(self):
-        start = time.time()
         log_group_stored_byte = GaugeMetricFamily(
             self.metric_prefix + 'stored_bytes',
             'Total size of the log group in bytes',
@@ -40,15 +42,8 @@ class CloudwatchLogsCollector:
         for page in pages:
             for object in page['logGroups']:
                 log_group_stored_byte.add_metric([object['logGroupName']], object['storedBytes'])
-        end = time.time()
-        self.metric_collector_duration.add_metric(['log_groups'], end-start)
         return log_group_stored_byte
 
     def collect(self):
         self.logger.info("Collect metrics")
-        self.metric_collector_duration = GaugeMetricFamily(
-            self.metric_prefix + 'collector_duration_seconds',
-            'Duration of a collection', labels=['collector'])
-
         yield self.collect_log_groups()
-        yield self.metric_collector_duration
